@@ -1,14 +1,16 @@
-#define FMU_FunctionList_End "WORD $0"	
+#define FMU_FunctionList_End "WORD $0"
 ALIGN 4
 FMU_FunctionList_OnPressA:
-	POIN FMUmisc_RunMapEvents|1
 	POIN FMUmisc_RunTalkEvents|1
+	POIN FMUmisc_RunMapEvents|1
 	POIN FMU_RunTrapASMC|1
+	POIN FMU_OnButton_UnitMenu|1
 	FMU_FunctionList_End
-	
+
 ALIGN 4
 FMU_FunctionList_OnPressB:
-	POIN FMU_OnButton_EndFreeMove|1
+	// runs at once, even while walking. FMU_OnButton_EndFreeMove ends free movement and the turn
+	POIN FMU_OnButton_ToggleRun|1
 	FMU_FunctionList_End
 
 ALIGN 4
@@ -18,6 +20,7 @@ FMU_FunctionList_OnPressL:
 
 ALIGN 4
 FMU_FunctionList_OnPressR:
+	POIN FMU_OnButton_ShowStats|1
 	FMU_FunctionList_End
 
 ALIGN 4
@@ -27,42 +30,57 @@ FMU_FunctionList_OnPressSelect:
 
 ALIGN 4
 FMU_FunctionList_OnPressStart:
-	FMU_FunctionList_End	
+	POIN FMU_OnButton_StartMenu|1
+	FMU_FunctionList_End
 
 
 
 
 
-#define FMU_SetTrap(TrapID,TrapASMC) "BYTE TrapID 0 0 0; POIN TrapASMC|1"
-#define FMU_SetTrapEnd "WORD 0 0"
+// TrapASMC gets r0 = proc, r1 = trap. Usability (same inputs) returns 0 to skip the trap
+#define FMU_SetTrap(TrapID,TrapASMC) "BYTE TrapID 0 0 0; POIN TrapASMC|1; WORD 0"
+#define FMU_SetTrap(TrapID,TrapASMC,Usability) "BYTE TrapID 0 0 0; POIN TrapASMC|1 Usability|1"
+#define FMU_SetTrapEnd "WORD 0 0 0"
 ALIGN 4
 HookListFMU_TrapList_OnPressA:
 	FMU_SetTrap(0x6,TrapHurt10HpASMC|1)	//Example
 	FMU_SetTrapEnd
 
+// Same, for the trap in front of the unit
+ALIGN 4
+HookListFMU_TrapList_OnPressAFaced:
+	FMU_SetTrapEnd
+
+// Stepping onto the trap
 ALIGN 4
 HookListFMU_TrapList_Auto:
+	FMU_SetTrap(0x4, Fmu_RunVanillaTrap, Fmu_CanRunVanillaTrap)	// Fire tile (thieves)
+	FMU_SetTrap(0x8, Fmu_RunVanillaTrap, Fmu_CanRunVanillaTrap)	// Fire
+	FMU_SetTrap(0xB, Fmu_RunVanillaTrap, Fmu_CanRunVanillaTrap)	// Mine
 	FMU_SetTrap(0xE,TrapHurt10HpASMC|1)	//Example
 	FMU_SetTrapEnd
-	
-	
+
+// Stepping next to it, facing it
+ALIGN 4
+HookListFMU_TrapList_AutoFaced:
+	FMU_SetTrapEnd
+
+
 
 #define FMU_SetLocEventType(LocID,TrapID) "BYTE LocID TrapID"
 #define FMU_SetLocEventTypeEnd "SHORT $0 $0"
 ALIGN 4
 HookListFMU_LocationBasedEvent:
-	FMU_SetLocEventType(0x14, 0x21)		// Chest
-	FMU_SetLocEventType(0x10, 0x3)		// Visit
-	FMU_SetLocEventType(0x10, 0x37)		// Visit
-	FMU_SetLocEventType(0x10, 0x38)		// Visit
+	FMU_SetLocEventType(0x14, 0)		// Chest
+	FMU_SetLocEventType(0x10, 0)		// Visit
 	FMU_SetLocEventType(0x11, 0)		// Size -> 0=No need trap
 	FMU_SetLocEventType(0x16, 0)		// Armory
 	FMU_SetLocEventType(0x17, 0)		// Vendor
 	FMU_SetLocEventType(0x18, 0)		// Scecret
 	FMU_SetLocEventTypeEnd
-	
+
 ALIGN 4
 HookListFMU_LocationBasedEventDoor:
 	FMU_SetLocEventType(0x12, 0x1E)		// Door
 	FMU_SetLocEventTypeEnd
-	
+

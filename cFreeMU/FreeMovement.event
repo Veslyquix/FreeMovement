@@ -1,57 +1,56 @@
 
+//#include "EAstdlib.event"
+#ifndef callHackNew
+	#define callHackNew(offset) "BYTE $01 $4B $9E $46 $00 $F8 $01 $E0; POIN (offset|0x1)"
+    #define jumpToHack(offset) "BYTE 0x00 0x4B 0x18 0x47; POIN (offset|0x1); PROTECT CURRENTOFFSET-8 CURRENTOFFSET-1"
+#endif 
+
 #ifndef FREE_MOVEMENT_INSTALLED
 #define FREE_MOVEMENT_INSTALLED
 	// By Mokha, origin from Sme
-	// Don't worry about FreeMU_Unit, it has been saved in proc now.
+	// The walking unit is kept in gActionData
+
+	/*
+	Help textID for "Grid Mode" in the L/Start menu (press R).
+	*/
+	#ifndef FMU_GridModeHelpText
+	#define FMU_GridModeHelpText 0
+	#endif
 
 #include FreeMovementInternal.event
 
 #define EnableFreeMovement "ASMC EnableFreeMovementASMC"
 #define DisableFreeMovement "ASMC DisableFreeMovementASMC"
+#define PauseFreeMovement "ASMC PauseFreeMovementASMC"
+#define ChangeFreeMovementUnit(pid) "SVAL 1 pid; ASMC ChangeFreeMovementUnitASMC"
 
 ALIGN 4
 FreeMoveFlag:
-	WORD 0x02028924
-	
+	//gPlaySt+0x1F is unused in vanilla and saved on suspend
+	WORD 0x0202BD0F
+
 ALIGN 4
-TimerDelay:
-	/*
-	The delay time from when the character stops any behavior to when the game starts to save the archive;
-	If you feel game jagging on operation, make a longer delay time. 
-	*/
-	BYTE 0xA
-	
-ALIGN 4
-FreeMU_MovingSpeed: 
+FreeMU_MovingSpeed:
 	/*
 	Moving speed can only set to 0x1/0x10/0x20/0x40/0x80/0x100
 	*/
 	BYTE 0x20
-	
+
+FreeMU_RunningSpeed:
+	// B switches between the two
+	BYTE 0x40
+
 	/*
 	Here you can set your own actions modularly
 	*/
-	#include "Examples/_TrapExample.event"	
+	#include "Examples/_TrapExample.event"
 	#include HookList.event
 
 
 /* MESSAGE EnableFreeMovementASMC EnableFreeMovementASMC_
-MESSAGE pFMU_MainLoop pFMU_MainLoop_
-MESSAGE pFMU_MoveUnit pFMU_MoveUnit_
-MESSAGE pFMU_HandleKeyMisc pFMU_HandleKeyMisc_
-MESSAGE pFMU_HandleSave pFMU_HandleSave_
-MESSAGE pFMU_PressA pFMU_PressA_
-MESSAGE pFMU_PressL pFMU_PressL_
-MESSAGE pFMU_PressSelect pFMU_PressSelect_
-MESSAGE pFMU_PressStart pFMU_PressStart_
-MESSAGE pFMU_RunLocBasedAsmcAuto pFMU_RunLocBasedAsmcAuto_
-MESSAGE pFMU_RunMiscBasedEvents pFMU_RunMiscBasedEvents_
 MESSAGE FMU_RunTrapASMC FMU_RunTrapASMC_
 MESSAGE FMUmisc_RunMapEvents FMUmisc_RunMapEvents_
 MESSAGE FMUmisc_RunTalkEvents FMUmisc_RunTalkEvents_
-MESSAGE pFMU_OnInit pFMU_OnInit_
-MESSAGE pFMU_InitTimer pFMU_InitTimer_
-MESSAGE MU_GetSpeed_FixForFreeMU MU_GetSpeed_FixForFreeMU_
 MESSAGE TrapHurt10HpASMC TrapHurt10HpASMC_ */
 
 

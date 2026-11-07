@@ -15,11 +15,15 @@ include $(DEVKITARM)/base_tools
 # = OBJECTS & DMPS =
 # ==================
 
+# Mokha's decomp-named C library (FE-CLib-Mokha)
+CLIB ?= $(DEVKITPRO)/FE-CLib_2025
+
 # defining path of lyn
-LYN := $(DEVKITARM)/lyn -longcalls
+LYN ?= $(DEVKITPRO)/lyn
+LYN += -longcalls
 
 # reference object
-LYNREF := _include/_Definitions.h.o
+LYNREF := $(CLIB)/reference/fireemblem8.ref.o
 
 # OBJ to event
 %.lyn.event: %.o $(LYNREF)
@@ -39,17 +43,22 @@ LYNREF := _include/_Definitions.h.o
 # ========================
 
 # Setting C/ASM include directories up
-INCLUDE_DIRS := _include _inc
+INCLUDE_DIRS := $(CLIB)/include
 INCFLAGS     := $(foreach dir, $(INCLUDE_DIRS), -I "$(dir)")
 
 # setting up compilation flags
 ARCH    := -mcpu=arm7tdmi -mthumb -mthumb-interwork
-CFLAGS  := $(ARCH) $(INCFLAGS) -Wall -Os -mtune=arm7tdmi -ffreestanding -mlong-calls
+CFLAGS  := $(ARCH) $(INCFLAGS) -std=gnu2x -Wall -Os -mtune=arm7tdmi -ffreestanding -fno-jump-tables -mlong-calls
 ASFLAGS := $(ARCH) $(INCFLAGS)
 
 # defining dependency flags
+CACHE_DIR := .cache
+$(shell mkdir -p $(CACHE_DIR))
 CDEPFLAGS = -MMD -MT "$*.o" -MT "$*.asm" -MF "$(CACHE_DIR)/$(notdir $*).d" -MP
 SDEPFLAGS = --MD "$(CACHE_DIR)/$(notdir $*).d"
+
+# so header changes rebuild what uses them
+-include $(wildcard $(CACHE_DIR)/*.d)
 
 # ASM to OBJ rule
 %.o: %.s
@@ -85,7 +94,7 @@ ifeq ($(MAKECMDGOALS),clean)
   CFILES := $(shell find -type f -name '*.c')
   SFILES := $(shell find -type f -name '*.s')
 # ASM_C_GENERATED := $(CFILES:.c=.o) $(SFILES:.s=.o) $(CFILES:.c=.asm)
-  ASM_C_GENERATED := $(CFILES:.c=.o) $(CFILES:.c=.asm)
+  ASM_C_GENERATED := $(CFILES:.c=.o) $(CFILES:.c=.asm) $(SFILES:.s=.o)
 # ASM_C_GENERATED += $(ASM_C_GENERATED:.o=.dmp) $(ASM_C_GENERATED:.o=.lyn.event)
   ASM_C_GENERATED += $(ASM_C_GENERATED:.o=.lyn.event)
   CLEAN_FILES += $(ASM_C_GENERATED)
@@ -107,9 +116,13 @@ SRC_BATTLE_PATH = ./BattleSystemRework
 DIRS = $(shell find $(SRC_PATH) -type d)
 
 SRC_FILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*.c))
-LYN_TARGET := $(patsubst %.c,%.lyn.event, $(SRC_FILES) )
+S_FILES := $(foreach dir, $(DIRS), $(wildcard $(dir)/*.s))
+LYN_TARGET := $(patsubst %.c,%.lyn.event, $(SRC_FILES) ) $(patsubst %.s,%.lyn.event, $(S_FILES) )
 ASM_TARGET := $(patsubst %.c,%.asm, $(SRC_FILES) )
-OBJ_TARGET := $(patsubst %.c,%.o, $(SRC_FILES) )
+OBJ_TARGET := $(patsubst %.c,%.o, $(SRC_FILES) ) $(patsubst %.s,%.o, $(S_FILES) )
+
+# deleted after each build, which shouldn't make the next build redo them
+.SECONDARY: $(OBJ_TARGET)
 
 all:
 	$(MAKE) $(ASM_TARGET)

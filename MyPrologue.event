@@ -1,14 +1,21 @@
+// Test chapter: the prologue on Ephraim's Ch14 castle map (29x31), with its doors, chests and shop
 #include EAstdlib.event
 EventPointerTable(7,MyPrologue)
 
+// the prologue's map, tiles, palette etc. become Ch14's (LOMA would make it count as a skirmish)
+PUSH
+ORG $8B0890+4
+BYTE $79 $00 $7A $7B $7C $7D $00 $7E
+POP
 
-
+#define PX 13
+#define PY 29
 
 ALIGN 32
 MyPrologue:
 POIN TurnBasedEvents
 POIN CharacterBasedEvents
-POIN LocationBasedEvents
+POIN $9EA91C // Ch14's doors, chests and secret shop
 POIN MiscBasedEvents
 POIN Dunno Dunno Dunno
 POIN Tutorial
@@ -19,15 +26,18 @@ POIN BeginningScene EndingScene
 
 ALIGN 32
 PlayerUnits:
-UNIT Eirika EirikaLord Eirika Level(1,Ally,False) [1,0] 0x0 0x0 0x0 0x1 [Rapier,Vulnerary] NoAI
-UNIT 0x2 General Eirika Level(1,Ally,False) [0,0] 0x0 0x0 0x0 0x1 [SilverLance,SteelSword] NoAI
+UNIT Eirika EirikaLord Eirika Level(1,Ally,False) [PX,PY] 0x0 0x0 0x0 0x1 [Rapier,Vulnerary] NoAI
+UNIT 0x2 General Eirika Level(1,Ally,False) [PX+1,PY] 0x0 0x0 0x0 0x1 [SilverLance,SteelSword] NoAI
+UNIT Franz Cavalier Eirika Level(1,Ally,False) [PX+2,PY] 0x0 0x0 0x0 0x1 [IronSword] NoAI
+UNIT Gilliam Knight Eirika Level(1,Ally,False) [PX,PY+1] 0x0 0x0 0x0 0x1 [IronLance] NoAI
+UNIT Vanessa PegasusKnight Eirika Level(1,Ally,False) [PX+1,PY+1] 0x0 0x0 0x0 0x1 [IronLance] NoAI
+UNIT 0x2E 0x34 Eirika Level(1,Ally,False) [PX+2,PY+1] 0x0 0x0 0x0 0x1 [IronSword] NoAI
 UNIT
 
 ALIGN 32
 EnemyUnits:
-UNIT 0x68 0x3F 0x0 0x24 [14,8] 0b 0x0 0x1 0x8B3BFC [0x1F,0x0,0x0,0x0] [0x6,0x3,0x0,0x0]
-UNIT 0x82 0x3F 0x0 0xC [14,7] 0b 0x0 0x1 0x8B3C04 [0x1F,0x0,0x0,0x0] [0x0,0xA,0x0,0x0]
-UNIT 0x80 0x3F 0x0 0x14 [14,7] 0b 0x0 0x1 0x8B3C0C [0x1F,0x0,0x0,0x0] [0x0,0x12,0x2,0x0]
+UNIT 0x68 0x3F 0x0 0x24 [26,19] 0b 0x0 0x1 0x8B3BFC [0x1F,0x0,0x0,0x0] [0x6,0x3,0x0,0x0]
+UNIT 0x82 0x3F 0x0 0xC [27,19] 0b 0x0 0x1 0x8B3C04 [0x1F,0x0,0x0,0x0] [0x0,0xA,0x0,0x0]
 UNIT
 
 ALIGN 32
@@ -36,10 +46,7 @@ END_MAIN
 
 ALIGN 32 //For some reason, CharacterBasedEvents have to be 32-Aligned
 CharacterBasedEvents:
-END_MAIN
-
-ALIGN 32
-LocationBasedEvents:
+CharacterEventBothWays(0x5,TalkEv,Eirika,0x2)
 END_MAIN
 
 ALIGN 32
@@ -58,20 +65,14 @@ ENDTRAP
 
 ALIGN 32
 BeginningScene:
-
-LOMA 0x0
-
-
 LOAD1 1 PlayerUnits
 ENUN
 LOAD1 1 EnemyUnits
 ENUN
 
-//ASMC EnableFreeMovementASMC|1
 EnableFreeMovement
-AddTrap(0x6,2,4)
-AddTrap(0xE,3,4)
-
+AddTrap(0x6,PX-2,PY) // dragon vein, press A on it
+AddTrap(0xE,PX+4,PY) // hurts when stepped on
 
 ENDA
 
@@ -81,7 +82,11 @@ MNC2 0x1
 ENDA
 
 ALIGN 32
+TalkEv:
+Text(0x969)
+ENDA
+
+ALIGN 32
 MiscBasedEvents:
 DefeatAll(EndingScene)
 END_MAIN
-

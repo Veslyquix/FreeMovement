@@ -3,9 +3,10 @@ cFreeMovement by Mokha：
 1. Include "FreeMovement.event" in your buildfile.
 2. Use the macro "EnableFreeMovement" in beginning event of the chapter, then you can enter the FreeMovement proc.
 3. Press Button A, you can interact with chest, Visit, Armory, Vendor, Scecret, Talk events. Traps can also get effect but need you work on it (I will cover it in "Tutorial Advanced").
-4. Press Button B will end the FreeMovement and goto Enimy Phase.
-5. Press Button L will call for menu.
+4. Press Button B to switch between walking and running.
+5. Press Button L or Start will call for menu (Status, Options, Suspend, Grid Mode). Grid Mode goes back to the normal player phase for the rest of the turn.
 6. Press Button "Select" will change unit to move.
+7. Press Button R to see the stats of the unit in front of you.
 
 <Tutorial Advanced>
 1. You can now modify the program modularly!
@@ -14,7 +15,7 @@ cFreeMovement by Mokha：
 
 <Toturial on Traps>
 1. To determine a trap effect. You should select a trapID (Same as TrapRework), and write the effect function for your trap. For now, the effect can only defined in ASMC, not in Event Code. I make an example in "/Examples/_TrapExample.event", you can refer on it.
-2. Once you end up working on effect routine, you should insert it in "HookList/HookListFMU_TrapList_OnPressA" or "HookListFMU_TrapList_Auto" by  using the macro FMU_SetTrap(ID,ASMC). Currently there are two types of traps defined: Triggered by pressing button A, or triggered automaticlly.
+2. Once you end up working on effect routine, you should insert it in "HookList/HookListFMU_TrapList_OnPressA" or "HookListFMU_TrapList_Auto" by  using the macro FMU_SetTrap(ID,ASMC). Currently there are two types of traps defined: Triggered by pressing button A, or triggered automaticlly. The "...Faced" lists do the same for the trap in front of the unit, and FMU_SetTrap(ID,ASMC,Usability) only runs the trap when Usability returns true.
 3. Now use macro "AddTrap(ID,x,y)" to set traps on map. You should set this macro in BeginningScene of your chapter.
 
 <Problems on original version:>
@@ -37,7 +38,7 @@ See Tutorials ！
 
 <Other considerations:>
 1. It can interact with EventEngine correctly: chest, Visit, Armory, Vendor, Scecret, Talk events. Currently problems still exixt with the Size event (I don't know why, but it has been not triggered yet). MiscEvents has not been verified, but I think it should be effective, because MiscEvents is directly used the original assembly code ( well my poor programming ability really does not allow this complex assembly code to be transcribed into C :(
-2. The free movement flag is at 0x2028924 (Defined at FreeMovement.event), which is not saved in the SaveData. Please use ExpandedModularSave to save this flag bit;
+2. The free movement state is one byte at gPlaySt+0x1F (FreeMoveFlag in FreeMovement.event). Suspends already save it, so ExpandedModularSave is no longer needed for it;
 
 <Credits:>
 FreeMovement prototype made by Sme;
@@ -48,10 +49,13 @@ Suggestions, tutorials and tools provided by Vesly and all FEU friends.
 
 <!>
 <Update>
-
-
-
-
+- Events: PauseFreeMovement, ChangeFreeMovementUnit(pid). Turn events don't run while free movement is on.
+- The unit keeps walking while a direction is held, and turns in place before walking a new way. The camera keeps it centered.
+- A talks to the unit in front, uses the tile you stand on or the door in front, then traps, then opens a unit menu (Talk, Visit, Trade, Supply).
+- Area events and step traps run once per tile, and the unit stops there. Vanilla mines and fire traps work.
+- Player units can be walked through.
+- With no unit to walk as, the player phase plays normally.
+- All of it is C now. It builds with Mokha's FE-CLib (FE-CLib_2025 in devkitPro, see src/Makefile).
 
 
 

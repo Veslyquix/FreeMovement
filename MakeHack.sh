@@ -9,11 +9,9 @@ target_rom="$base_dir/FE_FMUtest.gba"
 ea_exe="$base_dir/EventAssembler/ColorzCore.exe"
 
 
-Compile C
+# Compile C
 echo "On Compiling"
 cd "$Compile_Folder"
-rm _include/_Definitions.h.o
-make _include/_Definitions.h.o
 make clean
 make lyn
 
