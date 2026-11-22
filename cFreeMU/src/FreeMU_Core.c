@@ -719,11 +719,13 @@ static void Fmu_MainLoop(struct FMUProc * proc)
 
 bool Fmu_TryStartPhase(ProcPtr mapMain)
 {
+
     if (!Fmu_StartsThisPhase())
         return FALSE;
 
     Proc_StartBlocking(sProcScr_FmuIdle, mapMain);
-    Proc_Start(FreeMovementControlProc, PROC_TREE_3);
+    struct FMUProc* proc = Proc_Start(FreeMovementControlProc, PROC_TREE_3);
+    proc->ending = FALSE;
 
     return TRUE;
 }
