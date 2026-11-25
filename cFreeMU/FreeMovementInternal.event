@@ -13,6 +13,17 @@
 	#include "src/FreeMU_Hooks.lyn.event"
 	#include "src/FreeMU_RefreshUnitSprites.lyn.event"
 
+	#ifdef FMU_TALK_BUBBLES
+		#ifndef HP_BARS
+			WARNING "make sure HP bars / talk bubbles are installed or comment out FMU_TALK_BUBBLES"
+		#endif
+		#include "src/FreeMU_TalkBubbles.lyn.event"
+		PUSH
+			ORG $59D934
+			POIN Fmu_PutUnitSpritesOam|1
+		POP
+	#endif
+
 
 PUSH
 	ORG $59A38C

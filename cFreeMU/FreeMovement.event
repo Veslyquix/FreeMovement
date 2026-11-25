@@ -17,6 +17,8 @@
 	#define FMU_GridModeHelpText 0
 	#endif
 
+	#define FMU_TALK_BUBBLES
+
 #include FreeMovementInternal.event
 
 #define EnableFreeMovement "ASMC EnableFreeMovementASMC"
