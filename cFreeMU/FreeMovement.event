@@ -42,6 +42,10 @@ FreeMU_RunningSpeed:
 	// B switches between the two
 	BYTE 0x40
 
+ALIGN 4
+FreeMU_NoWalkThroughFlag:
+	SHORT 0 // If this flag / eventID is enabled, then you cannot walk through player units. 
+
 	/*
 	Here you can set your own actions modularly
 	*/

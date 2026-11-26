@@ -154,6 +154,7 @@ extern ButtonFunc FMU_FunctionList_OnPressStart[];
 extern u8* const FreeMoveFlag;
 extern const u8 FreeMU_MovingSpeed;
 extern const u8 FreeMU_RunningSpeed;
+extern const u16 FreeMU_NoWalkThroughFlag;
 
 extern const struct MenuDef FreeMovementLMenu;
 extern const struct MenuDef FreeMovementUnitMenu;

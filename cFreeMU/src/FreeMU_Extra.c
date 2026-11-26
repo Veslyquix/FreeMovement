@@ -25,8 +25,18 @@ bool FMU_CanUnitBeOnPos(struct Unit * unit, s8 x, s8 y)
     // player units can be walked through
     uid = gBmMapUnit[y][x];
 
-    if ((uid != 0) && (UNIT_FACTION(GetUnit(uid)) != FACTION_BLUE))
-        return FALSE;
+    if (uid != 0)
+    {
+        struct Unit * other = GetUnit(uid);
+        struct FMUProc * proc = Fmu_GetProc();
+
+        if (UNIT_FACTION(other) != FACTION_BLUE)
+            return FALSE;
+
+        if (FreeMU_NoWalkThroughFlag && CheckFlag(FreeMU_NoWalkThroughFlag) &&
+            ((proc == NULL) || !Fmu_IsWalker(proc, other)))
+            return FALSE;
+    }
 
     if (gBmMapHidden[y][x] & HIDDEN_BIT_UNIT)
         return FALSE; // a hidden unit is occupying this position
